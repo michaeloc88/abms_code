@@ -1,0 +1,12 @@
+#to add all changes to origin master
+git pull
+git add . -A
+git commit -m "Deleted some files..."
+git push origin master
+
+#to check status 
+git status
+
+#get back deleted files on local
+git checkout HEAD <path> #if not committed
+git checkout HEAD^ <path> #if committed
