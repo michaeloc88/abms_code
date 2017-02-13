@@ -1,5 +1,26 @@
 breed [agents agent]
 
+turtles-own [agent_fitness contribution_level]
+patches-own [group_fractioncontibutors group_pop group_fitness]
+
+globals [B num_groups total_pop fractioncontibutors avg_contribution]
+
+to setup
+  clear-all
+  setup-agents
+ ; ask patches [
+  ;  color-group
+  ;]
+  reset-ticks
+end
+
+to setup-agents
+  set-default-shape turtles "dot"
+  create-turtles initial_agents [
+    setxy random-xcor random-ycor
+    set contribution_level random-float 1
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -27,6 +48,38 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
+
+SLIDER
+661
+28
+878
+61
+initial_agents
+initial_agents
+0
+1000
+490
+1
+1
+agents
+HORIZONTAL
+
+BUTTON
+51
+35
+124
+68
+setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

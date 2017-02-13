@@ -9,7 +9,7 @@ class coop implements Parameters
     {
         int nra=1000; // 100-1000
         int nrg=15; // 1 - 15
-        double B=40; // 0-1
+        double B=40; // 0-100
         double mr=0.05; // 0.005 - 0.1
         double pmut=0.01; // 0.005 - 0.1
         double[] pg = new double[nrg]; // public good
@@ -73,12 +73,12 @@ class coop implements Parameters
                 // pmut=0.003*j1;
                 // nra=40*j1;
                 
-                totr=1*(1000/nra); //timesteps (?)
-                //totr=2000*(1000/nra); //timesteps (?)
+
+                totr=2000*(1000/nra); // timesteps (?)
                 
                 for (int j2=2; j2<=2; j2++)
                 {
-                    pmut=0.003*j2; //weird way of saying 0.006
+                    pmut=0.003*j2; // weird way of saying 0.006
                     // B=2*j2;
                     // nrg=j2;
                     System.out.println(" " + nra + " " + nrg);
@@ -95,63 +95,57 @@ class coop implements Parameters
                         summigr=0;  
                         for (int i3=0; i3<nra; i3++)
                         {
-                            x[i3]=Math.random(); // makes random numbers from 0 to 1 and store them in array size of pop --- assigning cooperation level (?)
-                            gx[i3]=rnd.nextInt(nrg); // makes random integers between 1 and number of groups (10) stores in array size of pop --- assigning groups randomly to agents
+                            x[i3]=Math.random(); // assigning initial cooperation level
+                            gx[i3]=rnd.nextInt(nrg); // assining agents to random groups
                         }
-                        // System.out.println(Arrays.toString(x)); //checking x array
+
                         sumx=0;
                         
                         
-                        // array of zeros size nra
+                        // make empty array for number of agents per group 
                         for (int i3=0; i3<nrg; i3++)
                         {
                             nrag[i3]=0;
                         }
-                        
-                        
-                        // System.out.println(Arrays.toString(gx)); //checking gx array
+                       
                         
                         // looping through total pop 
                         for (int i3=0; i3<nra; i3++)
                         {
-                            // check migration probability 
+                            // check mutation probability 
                             if (Math.random()<pmut)
                             {
-                                //make list of random #'s size of pop
+                                //make array of random #'s 
                                 x[i3]=Math.random(); 
                             }
-                            // sum of all random #'s
+
                             sumx=sumx+x[i3]; 
-                            
-                            // random indexes of nrag will have  the rest will have zeros
-                            nrag[gx[i3]]=nrag[gx[i3]]+1; // 
+                         
+                            nrag[gx[i3]]=nrag[gx[i3]]+1; 
                         }
-                        //System.out.println(Arrays.toString(nrag)); //checking nrag array
+
                         
                         
-                        //////////// Run
+                     
                         // Iterating through timesteps
                         for (int i1=0; i1<=totr; i1++)
                         {
                             // evaluate
                             for (int i2=0; i2<nrg; i2++)
                             {
-                                // making lists of zeros size of number of group (10)
-                                pg[i2]=0;
-                                avgx[i2]=0;
-                                avgy[i2]=0;
+                                // making empy arrays
+                                pg[i2]=0;    // public good
+                                avgx[i2]=0;   // avg contribution
+                                avgy[i2]=0;    //avg fitness
                             }
                             
-                            // Setting values of pg array to value of x array in certain px index values of gx,,,,, (????) 
-                            // some will be zero some will be rand numb btw 1-10
                             for (int i2=0; i2<nra; i2++)
                             {
                                 pg[gx[i2]]=pg[gx[i2]]+x[i2];
                             }
                             
-                            System.out.println(Arrays.toString(pg)); //checking pg array
                             
-                            //////////// Agent Income
+                            //////////// Agent Income ////////////
                              
                             for (int i3=0; i3<nra; i3++)
                             {
@@ -162,9 +156,9 @@ class coop implements Parameters
                                     {
                                         y[i3]=1-x[i3]+pg[gx[i3]];
                                     } 
-                                    else 
+                                    else // equation 3
                                     {
-                                        y[i3]=1-x[i3]+B*pg[gx[i3]]/(1.0*nrag[gx[i3]]);
+                                        y[i3]=1-x[i3]+B*pg[gx[i3]]/(1.0*nrag[gx[i3]]);  
                                     }
                                 }
                             }
@@ -185,7 +179,7 @@ class coop implements Parameters
                             }
                             
                             
-                            //////////// Reproduction
+                            //////////// Reproduction ////////////
                             maxp=0;
                             for (int i3=0; i3<nra; i3++)
                             {
@@ -203,10 +197,10 @@ class coop implements Parameters
                             counter=0;
                             while (counter < nra)
                             {
-                                draw=Math.random()*nra; // making a random num 0-1 times nra = 1000
+                                draw=Math.random()*nra; // making a random num 0-1 * nra = 1000
                                 number=(int)draw; // integer between 0-1000
                                 
-                                // Sorting out who will reproduce ---- not sure what does this does (?????)
+                                // Sorting out who will reproduce 
                                 if (Math.random()<(px[number]/maxp))
                                 {
                                     xx[counter]=x[number];
@@ -215,12 +209,7 @@ class coop implements Parameters
                                 }
                             }   
                             
-                             /* checking stuff
-                            int l = gxx.length;
-                            System.out.println(Arrays.toString(xx)); //checking xx array
-                            System.out.println(Arrays.toString(gxx)); //checking gxx array
-                            System.out.println(l); //checking size of gxx
-                            // end checking suff */
+                            
                             
                             // Perturbation of Offspring 
                             for (int i3=0; i3<nra; i3++)     
@@ -228,8 +217,7 @@ class coop implements Parameters
                                 // Adding pertubation from normal disribution to cooperation level
                                 x[i3]=xx[i3]+rnd.nextGaussian()*pmut;
                                 
-                                // Making sure all nums between 0 and 1
-                                
+                                // Making sure all nums between 1 and 0
                                 if (x[i3]<0)
                                 {
                                     x[i3]=0;
@@ -249,21 +237,21 @@ class coop implements Parameters
                                 avgy[gx[i3]]=avgy[gx[i3]]+y[i3];
                             }
                             
-                            // Creating list of zeros the size of the number of groups -- Resetting the group pop array 
+                            // Resetting the group pop array 
                             for (int i3=0; i3<nrg; i3++)
                             {
                                 nrag[i3]=0;
                             }
                             
-                            // Adding 1 to list of groups of offsprings gx[i3] .... (?????)
+                            // Adding new offsprings gx[i3] .... (?????)
                             for (int i3=0; i3<nra; i3++)
                             {
                                 nrag[gx[i3]]=nrag[gx[i3]]+1;
                             }
-                            //System.out.println(Arrays.toString(nrag)); //checking nrag array
+
                             
                             
-                            //////////// Migration
+                            //////////// Migration (?)
                             migr=0;
                             
                             for (int i3=0; i3<nrg; i3++)
@@ -282,8 +270,10 @@ class coop implements Parameters
                                 } else { fw5.write( + 0 + " " + nrag[i3] + " " + (nrag[i3] - prevnrag[i3]) + " "); 
                                 }
                             }
-                            //System.out.println("migr " + migr); //checking migr
+
                             fw5.write("\r\n");
+                            
+                            // Calculating the fraction of cooperators and investment
                             maxg=0;
                             for (int i2=0; i2<nrg; i2++)
                             {
@@ -298,7 +288,7 @@ class coop implements Parameters
                                 }
                             }
                             
-                            ///////// migration
+                            //////////// Migration ////////////
                             
                             sumx=0;
                             suml=0;
@@ -319,7 +309,7 @@ class coop implements Parameters
                             }
                             fw.write(+ i1 + " " + sumx/(1.0*nra) + " " + maxg + "\r\n");
                             
-                            System.out.println("summigr " + summigr); //checking summigr
+
                         }
                         fw.write(+ suma/1000.0 + "\r\n");
                         sumat=sumat+suma;
@@ -327,7 +317,7 @@ class coop implements Parameters
                         sumyyt=sumyyt+sumyy;
                         summigrt=summigrt+summigr;
                         
-                        System.out.println("summigrt " + summigrt); //checking summigrt
+
                     }
                     fw2.write(+ mr + " " + pmut + " " + sumat/100000.0 + " " + sumyyt/100000.0 + " " + + summaxgt/100000.0 + " " + summigrt/100000.0 + "\r\n");
                     // fw.write("\r\n");
