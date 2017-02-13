@@ -8,6 +8,7 @@ globals [B num_groups total_pop fractioncontibutors avg_contribution]
 to setup
   clear-all
   setup-agents
+  setup-groups
  ; ask patches [
   ;  color-group
   ;]
@@ -17,16 +18,23 @@ end
 to setup-agents
   set-default-shape turtles "dot"
   create-turtles initial_agents [
-    setxy random-xcor random-ycor
+    setxy random-pxcor random-pycor
+    ;move-to one-of patches
     set contribution_level random-float 1
+    set color scale-color red contribution_level 0 1
   ]
+end
+
+to setup-groups
+  ask patches [
+  set pcolor green]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-649
-470
+445
+78
+884
+538
 16
 16
 13.0
@@ -50,15 +58,15 @@ ticks
 30.0
 
 SLIDER
-661
-28
-878
-61
+44
+77
+261
+110
 initial_agents
 initial_agents
 0
 1000
-490
+1000
 1
 1
 agents
@@ -80,6 +88,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+46
+119
+312
+152
+initial_num_of_groups
+initial_num_of_groups
+0
+100
+10
+1
+1
+groups
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
