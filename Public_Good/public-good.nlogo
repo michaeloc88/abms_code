@@ -1,45 +1,130 @@
-breed [agents agent]
+;breed [agents agent]
 
-turtles-own [agent_fitness contribution_level]
-patches-own [group_fractioncontibutors group_pop group_fitness]
+turtles-own [
+   agent-fitness
+   contribution-level
+   my-group
+   ]
+;patches-own [group_fractioncontibutors group_pop group_fitness]
 
-globals [B num_groups total_pop fractioncontibutors avg_contribution]
+globals [
+  groups
+  total-pop
+  total-contribution
+  fraction-contibutors
+  avg-contribution
+  group-pop
+  ;group-fitness
+  ]
 
 to setup
   clear-all
+  set groups patches with [group?]
   setup-agents
-  setup-groups
- ; ask patches [
-  ;  color-group
-  ;]
+  update-labels
   reset-ticks
 end
 
 to setup-agents
   set-default-shape turtles "dot"
-  create-turtles initial_agents [
-    setxy random-pxcor random-pycor
+  create-turtles initial-agents [
+    ;setxy random-pxcor random-pycor
     ;move-to one-of patches
-    set contribution_level random-float 1
-    set color scale-color red contribution_level 0 1
+    set contribution-level random-float 1
+    set my-group one-of groups
+    move-to my-group
+    ;set color scale-color red contribution_level 0 1
   ]
 end
 
-to setup-groups
-  ask patches [
-  set pcolor green]
+;to setup-groups
+;  ask patches [
+;  set pcolor green]
+;end
+
+to go
+  ask turtles[
+  contribute
+  calc-total-contribution
+  calc-group-pop
+  calc-agent-fitness
+  calc-group-fitness
+  reproduce
+  migrate]
+  tick
+end
+
+
+to contribute
+
+end
+to calc-total-contribution
+  set total-contribution sum [contribution-level] of turtles
+  print total-contribution
+end
+
+to calc-group-pop
+  set group-pop count turtles-here
+  print group-pop
+end
+
+to calc-agent-fitness
+  ifelse (group-pop < B)[
+      set agent-fitness (1 - contribution-level + total-contribution)
+    ] [
+      set agent-fitness (1 - contribution-level + (B / group-pop)); + total contribution
+    ]
+
+end
+
+to calc-group-fitness
+
+end
+
+to reproduce
+
+end
+
+to migrate
+ ; ask turtles [
+ ;   set my-group patch-here
+ ; ]
+
+end
+
+to-report group?  ;; patch procedure
+  ;; if your pycor is 0 and your pxcor is where a group should be located,
+  ;; then you're a group site.
+  ;; In this model (0,0) is near the right edge, so pxcor is usually
+  ;; negative.
+  ;; first figure out how many patches apart the groups will be
+  let group-interval floor (world-width / num-groups)
+  report
+    ;; all group sites are in the middle row
+    (pycor = 0) and
+    ;; leave a right margin of one patch, for legibility
+    (pxcor <= 0) and
+    ;; the distance between groups must divide evenly into
+    ;; our pxcor
+    (pxcor mod group-interval = 0) and
+    ;; finally, make sure we don't wind up with too many groups
+    (floor ((- pxcor) / group-interval) < num-groups)
+end
+
+to update-labels
+  ask groups [ set plabel count turtles-here]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 445
 78
-884
-538
-16
-16
-13.0
+865
+664
+-1
+55
+5.0
 1
-10
+14
 1
 1
 1
@@ -47,10 +132,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-80
+1
+-55
+55
 0
 0
 1
@@ -62,9 +147,9 @@ SLIDER
 77
 261
 110
-initial_agents
-initial_agents
-0
+initial-agents
+initial-agents
+100
 1000
 1000
 1
@@ -94,15 +179,94 @@ SLIDER
 119
 312
 152
-initial_num_of_groups
-initial_num_of_groups
+num-groups
+num-groups
 0
-100
+15
 10
 1
 1
 groups
 HORIZONTAL
+
+SLIDER
+47
+161
+219
+194
+B
+B
+0
+100
+40
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+53
+215
+228
+248
+migration_rate
+migration_rate
+0
+1
+0.006
+.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+56
+269
+228
+302
+mutation_rate
+mutation_rate
+0
+1
+0.006
+.001
+1
+NIL
+HORIZONTAL
+
+BUTTON
+131
+36
+194
+69
+go
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+217
+40
+307
+73
+go once
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
