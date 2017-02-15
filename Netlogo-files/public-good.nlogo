@@ -71,8 +71,8 @@ to contribute
   ask groups[
     set group-pop count turtles-here
     set group-contribution sum [contribution] of turtles-here ;; Total group contributions
-    set avg-group-contribution (group-contribution / group-pop) ;; Average group contributions
-    set pcolor scale-color red avg-group-contribution 0 .8
+     ifelse (group-pop > 0) [set avg-group-contribution group-contribution / group-pop][set avg-group-contribution 0]  ;; Average group contributions
+           set pcolor scale-color red avg-group-contribution 0 .8
     ]
 
   set total-pop count turtles
@@ -209,7 +209,7 @@ initial-agents
 initial-agents
 1
 1000
-1000
+11
 1
 1
 agents
@@ -241,7 +241,7 @@ num-groups
 num-groups
 0
 15
-15
+10
 1
 1
 groups
@@ -379,6 +379,36 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot  mean [group-pop] of groups"
+
+TEXTBOX
+157
+479
+307
+497
+Color legend:
+12
+0.0
+1
+
+TEXTBOX
+258
+479
+548
+497
+Dark red - Highest average contributions
+12
+15.0
+1
+
+TEXTBOX
+259
+495
+563
+513
+Light red - Lowest average contributions
+12
+18.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
