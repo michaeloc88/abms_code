@@ -1,4 +1,4 @@
-; ************ (P A R A M E T E R S) ************
+;; ************ (P A R A M E T E R S) ************
 
 turtles-own [
    agent-fitness
@@ -23,7 +23,7 @@ globals [
 ]
 
 
-; ************ (S E T U P) ************
+;; ************ (S E T U P) ************
 
 to setup
 
@@ -46,7 +46,7 @@ to setup-agents
 end
 
 
-; ************ (G O) ************
+;; ************ (G O) ************
 
 to go
 
@@ -60,39 +60,40 @@ to go
 end
 
 
-; ************ (C O N T R I B U T E) ************
+;; ************ (C O N T R I B U T E) ************
 
 to contribute
 
   ask turtles[
-    set contribution random-float 1 ;individual contributions
+    set contribution random-float 1 ;; Individual contributions
     ]
 
   ask groups[
     set group-pop count turtles-here
-    set group-contribution sum [contribution] of turtles-here ;total group contributions
-    set avg-group-contribution (group-contribution / group-pop) ;average group contributions
+    set group-contribution sum [contribution] of turtles-here ;; Total group contributions
+    set avg-group-contribution (group-contribution / group-pop) ;; Average group contributions
     set pcolor scale-color red avg-group-contribution 0 .8
     ]
 
   set total-pop count turtles
-  set total-contribution sum [contribution] of turtles ;total contributions
-  set avg-contribution (total-contribution / total-pop) ;avg contributions
+  set total-contribution sum [contribution] of turtles ;; Total contributions
+  set avg-contribution (total-contribution / total-pop) ;; Average contributions
 
 end
 
 
-; ************ (F I T N E S S) ************
+;; ************ (F I T N E S S) ************
 
 to calc-fitness
 
-  ;individual fitness
+  ;; Individual fitness
   ask turtles[
     ifelse (group-pop > B)[
-      set agent-fitness (1 - contribution + (B / group-pop) * total-contribution) ;equation 3
+      set agent-fitness (1 - contribution + (B / group-pop) * total-contribution) ;; Equation 3
     ]
     [
-       set agent-fitness (1 - contribution + total-contribution) ;equation 5
+       set agent-fitness (1 - contribution + total-contribution) ;; Equation 5
+
     ;type "my group" print my-group
     ;type "group pop " print group-pop
     ;type "contribution " print contribution
@@ -100,40 +101,40 @@ to calc-fitness
     ]
   ]
 
-  ;group fitness
+  ;; Group fitness
   ask groups[
     set group-fitness sum [agent-fitness] of turtles-here
     ;type "group fitness " print group-fitness
   ]
 
-  ;total fitness
+  ;; Total fitness
   set total-fitness sum [agent-fitness] of turtles
 
 end
 
 
-; ************ (R E P R O D U C E) ************
+;; ************ (R E P R O D U C E) ************
 
 to reproduce
 
   ask turtles[
-    set prob-reproduce (agent-fitness / total-fitness) ;equation 4
+    set prob-reproduce (agent-fitness / total-fitness) ;; Equation 4
 
     if (random-float 1.0 < prob-reproduce) [
-      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)] ;mutation
+      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)] ;; Mutation
     ]
   ]
 
 end
 
 
-; ************ (M I G R A T I O N) ************
+;; ************ (M I G R A T I O N) ************
 
 to migrate
 
   ask turtles[
     if (random-float 1.0 < migration-rate)[
-      set my-group one-of groups
+      set my-group one-of groups ;; Move to random group
       move-to my-group
       ]
   ]
@@ -141,7 +142,7 @@ to migrate
 end
 
 
-; ************ (U P D A T E) ************
+;; ************ (U P D A T E) ************
 
 to update-labels
 
@@ -150,9 +151,9 @@ to update-labels
 end
 
 
-; ************ (M A K E - G R O U P S) ************
+;; ************ (M A K E - G R O U P S) ************
 
-;from Party model
+;; From Party model:
 to-report group?  ;; patch procedure
   ;; if your pycor is 0 and your pxcor is where a group should be located,
   ;; then you're a group site.
