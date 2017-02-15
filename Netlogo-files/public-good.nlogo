@@ -174,10 +174,10 @@ to-report group?  ;; patch procedure
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-329
-37
-1047
-193
+69
+300
+787
+456
 -1
 1
 41.7
@@ -201,10 +201,10 @@ ticks
 30.0
 
 SLIDER
-44
-77
-261
-110
+12
+55
+229
+88
 initial-agents
 initial-agents
 1
@@ -216,10 +216,10 @@ agents
 HORIZONTAL
 
 BUTTON
-51
-35
-124
-68
+8
+10
+81
+43
 setup
 setup
 NIL
@@ -233,25 +233,25 @@ NIL
 1
 
 SLIDER
-46
-119
-312
-152
+12
+96
+278
+129
 num-groups
 num-groups
 0
 15
-10
+15
 1
 1
 groups
 HORIZONTAL
 
 SLIDER
-47
-161
-219
-194
+13
+136
+185
+169
 B
 B
 0
@@ -263,10 +263,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-47
-200
-222
-233
+12
+177
+187
+210
 migration-rate
 migration-rate
 0
@@ -278,10 +278,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-47
-242
+12
 219
-275
+184
+252
 mutation-rate
 mutation-rate
 0
@@ -293,10 +293,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-131
-36
-194
-69
+87
+10
+150
+43
 go
 go
 T
@@ -310,10 +310,10 @@ NIL
 1
 
 BUTTON
-217
-40
-307
-73
+156
+10
+246
+43
 go once
 go
 NIL
@@ -327,11 +327,11 @@ NIL
 0
 
 PLOT
-67
-359
-267
-509
-group fitness
+291
+10
+491
+160
+mean group fitness
 time
 fitness
 0.0
@@ -345,11 +345,11 @@ PENS
 "totcont" 1.0 0 -16777216 true "" "plot mean [group-fitness] of groups"
 
 PLOT
-308
-358
-508
-508
-contributions
+497
+10
+697
+160
+mean group contributions
 time
 contributions
 0.0
@@ -363,10 +363,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [avg-group-contribution] of groups"
 
 PLOT
-562
-357
-762
-507
+703
+10
+903
+160
 mean group pop
 time
 agents
