@@ -1,86 +1,93 @@
+; ************ (P A R A M E T E R S) ************
+
 turtles-own [
    agent-fitness
    contribution
    my-group
    prob-reproduce
-   ]
+]
 
 patches-own [
   group-pop
   group-fitness
-  avg-contribution
-  ]
+  group-contribution
+  avg-group-contribution
+]
 
 globals [
   groups
   total-pop
   total-contribution
-  ;fraction-contibutors
+  avg-contribution
+  total-fitness
 ]
+
+
+; ************ (S E T U P) ************
 
 to setup
   clear-all
   set groups patches with [group?]
   setup-agents
-  update
+  update-labels
   reset-ticks
 end
 
 to setup-agents
-  set-default-shape turtles "dot"
   create-turtles initial-agents [
     set my-group one-of groups
-    ;;print my-group
     move-to my-group
-    ;;set color scale-color red contribution 0 1
-    ;;move-to one-of patches
-    ;;set contribution random-float 1
+    hide-turtle
   ]
 end
 
 
+; ************ (G O) ************
+
 to go
-  ask groups [
-    set group-pop count turtles-here
-    ;type "group pop " print group-pop
-    ]
-
-  set total-pop count turtles
-  ;type "total pop " print total-pop
-
+  ;ask turtles [hide-turtle]
   contribute
   calc-fitness
-  ask groups [set pcolor scale-color red avg-contribution 0 1]
   reproduce
   migrate
-  update
+  update-labels
   tick
 end
 
-;; CONTRIBUTE
+
+; ************ (C O N T R I B U T E) ************
+
 to contribute
+
   ask turtles[
-    set contribution random-float 1
-    ;type "contributions " print contribution
+    set contribution random-float 1 ;individual contributions
     ]
-  set total-contribution sum [contribution] of turtles
-  ;type "total contributions " print total-contribution
-  set total-pop count turtles
+
   ask groups[
-    ;;set group-contributions sum [contributions] of turtles-here
-    set avg-contribution (sum [contribution] of turtles-here / group-pop)
-    ;;print group-pop
-    ;type "avg conributions in group " print avg-contribution
+    set group-pop count turtles-here
+    set group-contribution sum [contribution] of turtles-here ;total group contributions
+    set avg-group-contribution (group-contribution / group-pop) ;average group contributions
+    set pcolor scale-color red avg-group-contribution 0 .8
     ]
+
+  set total-pop count turtles
+  set total-contribution sum [contribution] of turtles ;total contributions
+  set avg-contribution (total-contribution / total-pop) ;avg contributions
+
 end
 
-;; CAlCULATE FITNESS
+
+; ************ (F I T N E S S) ************
+
 to calc-fitness
+
+  ;individual fitness
   ask turtles[
-    ifelse (group-pop < B)[
-      set agent-fitness (1 - contribution + total-contribution)
-    ] [
-    set agent-fitness (1 - contribution + (B / group-pop) * total-contribution)
+    ifelse (group-pop > B)[
+      set agent-fitness (1 - contribution + (B / group-pop) * total-contribution) ;equation 3
+    ]
+    [
+       set agent-fitness (1 - contribution + total-contribution) ;equation 5
     ;type "my group" print my-group
     ;type "group pop " print group-pop
     ;type "contribution " print contribution
@@ -88,23 +95,32 @@ to calc-fitness
     ]
   ]
 
-ask groups[
-  set group-fitness sum [agent-fitness] of turtles-here
-  ;type "group fitness " print group-fitness
-]
+  ;group fitness
+  ask groups[
+    set group-fitness sum [agent-fitness] of turtles-here
+    ;type "group fitness " print group-fitness
+  ]
+
+  ;total fitness
+  set total-fitness sum [agent-fitness] of turtles
 end
 
-;; REPRODUCE
+
+; ************ (R E P R O D U C E) ************
+
 to reproduce
   ask turtles[
-    set prob-reproduce (agent-fitness / group-fitness)
+    set prob-reproduce (agent-fitness / total-fitness) ;equation 4
+
     if (random-float 1.0 < prob-reproduce) [
-      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)]
+      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)] ;mutation to offspring
     ]
   ]
 end
 
-;; MIGRATION
+
+; ************ (M I G R A T I O N) ************
+
 to migrate
   ask turtles[
     if (random-float 1.0 < migration-rate)[
@@ -115,12 +131,14 @@ to migrate
 end
 
 
+; ************ (U P D A T E) ************
 
-
-to update
+to update-labels
   ask groups [ set plabel count turtles-here]
-  ;print groups
 end
+
+
+; ************ (M A K E - G R O U P S) ************
 
 to-report group?  ;; patch procedure
   ;; if your pycor is 0 and your pxcor is where a group should be located,
@@ -142,13 +160,13 @@ to-report group?  ;; patch procedure
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-366
-39
-886
-160
+329
+37
+1047
+193
 -1
 1
-30.0
+41.7
 1
 15
 1
@@ -177,7 +195,7 @@ initial-agents
 initial-agents
 1
 1000
-11
+1000
 1
 1
 agents
@@ -209,7 +227,7 @@ num-groups
 num-groups
 0
 15
-5
+10
 1
 1
 groups
@@ -224,17 +242,17 @@ B
 B
 0
 100
-4
+10
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-53
-215
-228
-248
+47
+200
+222
+233
 migration-rate
 migration-rate
 0
@@ -246,15 +264,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-56
-269
-228
-302
+47
+242
+219
+275
 mutation-rate
 mutation-rate
 0
 1
-0.006
+0.01
 .001
 1
 NIL
@@ -299,18 +317,54 @@ PLOT
 359
 267
 509
-totcont
+group fitness
 time
-to
+fitness
 0.0
-100.0
+10.0
 0.0
 5.0
 true
 false
 "" ""
 PENS
-"totcont" 1.0 0 -16777216 true "" "plot total-contribution"
+"totcont" 1.0 0 -16777216 true "" "plot mean [group-fitness] of groups"
+
+PLOT
+308
+358
+508
+508
+contributions
+time
+contributions
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot mean [avg-group-contribution] of groups"
+
+PLOT
+562
+357
+762
+507
+mean group pop
+time
+agents
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot  mean [group-pop] of groups"
 
 @#$#@#$#@
 ## WHAT IS IT?
