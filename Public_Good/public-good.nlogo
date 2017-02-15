@@ -1,95 +1,125 @@
-;breed [agents agent]
-
 turtles-own [
    agent-fitness
-   contribution-level
+   contribution
    my-group
+   prob-reproduce
    ]
-;patches-own [group_fractioncontibutors group_pop group_fitness]
+
+patches-own [
+  group-pop
+  group-fitness
+  avg-contribution
+  ]
 
 globals [
   groups
   total-pop
   total-contribution
-  fraction-contibutors
-  avg-contribution
-  group-pop
-  ;group-fitness
-  ]
+  ;fraction-contibutors
+]
 
 to setup
   clear-all
   set groups patches with [group?]
   setup-agents
-  update-labels
+  update
   reset-ticks
 end
 
 to setup-agents
   set-default-shape turtles "dot"
   create-turtles initial-agents [
-    ;setxy random-pxcor random-pycor
-    ;move-to one-of patches
-    set contribution-level random-float 1
     set my-group one-of groups
+    ;;print my-group
     move-to my-group
-    ;set color scale-color red contribution_level 0 1
+    ;;set color scale-color red contribution 0 1
+    ;;move-to one-of patches
+    ;;set contribution random-float 1
   ]
 end
 
-;to setup-groups
-;  ask patches [
-;  set pcolor green]
-;end
 
 to go
-  ask turtles[
+  ask groups [
+    set group-pop count turtles-here
+    ;type "group pop " print group-pop
+    ]
+
+  set total-pop count turtles
+  ;type "total pop " print total-pop
+
   contribute
-  calc-total-contribution
-  calc-group-pop
-  calc-agent-fitness
-  calc-group-fitness
+  calc-fitness
+  ask groups [set pcolor scale-color red avg-contribution 0 1]
   reproduce
-  migrate]
+  migrate
+  update
   tick
 end
 
-
+;; CONTRIBUTE
 to contribute
-
-end
-to calc-total-contribution
-  set total-contribution sum [contribution-level] of turtles
-  print total-contribution
-end
-
-to calc-group-pop
-  set group-pop count turtles-here
-  print group-pop
-end
-
-to calc-agent-fitness
-  ifelse (group-pop < B)[
-      set agent-fitness (1 - contribution-level + total-contribution)
-    ] [
-      set agent-fitness (1 - contribution-level + (B / group-pop)); + total contribution
+  ask turtles[
+    set contribution random-float 1
+    ;type "contributions " print contribution
     ]
-
+  set total-contribution sum [contribution] of turtles
+  ;type "total contributions " print total-contribution
+  set total-pop count turtles
+  ask groups[
+    ;;set group-contributions sum [contributions] of turtles-here
+    set avg-contribution (sum [contribution] of turtles-here / group-pop)
+    ;;print group-pop
+    ;type "avg conributions in group " print avg-contribution
+    ]
 end
 
-to calc-group-fitness
+;; CAlCULATE FITNESS
+to calc-fitness
+  ask turtles[
+    ifelse (group-pop < B)[
+      set agent-fitness (1 - contribution + total-contribution)
+    ] [
+    set agent-fitness (1 - contribution + (B / group-pop) * total-contribution)
+    ;type "my group" print my-group
+    ;type "group pop " print group-pop
+    ;type "contribution " print contribution
+    ;type "agent fitness " print agent-fitness
+    ]
+  ]
 
+ask groups[
+  set group-fitness sum [agent-fitness] of turtles-here
+  ;type "group fitness " print group-fitness
+]
 end
 
+;; REPRODUCE
 to reproduce
-
+  ask turtles[
+    set prob-reproduce (agent-fitness / group-fitness)
+    if (random-float 1.0 < prob-reproduce) [
+      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)]
+    ]
+  ]
 end
 
+;; MIGRATION
 to migrate
- ; ask turtles [
- ;   set my-group patch-here
- ; ]
+  ask turtles[
+    if (random-float 1.0 < migration-rate)[
+      set my-group one-of groups
+      move-to my-group
+      ]
+  ]
+end
 
+
+
+
+to update
+  ask groups [ set plabel count turtles-here]
+  ;print groups
 end
 
 to-report group?  ;; patch procedure
@@ -110,32 +140,28 @@ to-report group?  ;; patch procedure
     ;; finally, make sure we don't wind up with too many groups
     (floor ((- pxcor) / group-interval) < num-groups)
 end
-
-to update-labels
-  ask groups [ set plabel count turtles-here]
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
-445
-78
-865
-664
+366
+39
+886
+160
 -1
-55
-5.0
 1
-14
+30.0
+1
+15
 1
 1
 1
 0
 1
+0
 1
+-15
 1
--80
+-1
 1
--55
-55
 0
 0
 1
@@ -149,9 +175,9 @@ SLIDER
 110
 initial-agents
 initial-agents
-100
+1
 1000
-1000
+11
 1
 1
 agents
@@ -183,7 +209,7 @@ num-groups
 num-groups
 0
 15
-10
+5
 1
 1
 groups
@@ -198,7 +224,7 @@ B
 B
 0
 100
-40
+4
 1
 1
 NIL
@@ -209,8 +235,8 @@ SLIDER
 215
 228
 248
-migration_rate
-migration_rate
+migration-rate
+migration-rate
 0
 1
 0.006
@@ -224,8 +250,8 @@ SLIDER
 269
 228
 302
-mutation_rate
-mutation_rate
+mutation-rate
+mutation-rate
 0
 1
 0.006
@@ -267,6 +293,24 @@ NIL
 NIL
 NIL
 0
+
+PLOT
+67
+359
+267
+509
+totcont
+time
+to
+0.0
+100.0
+0.0
+5.0
+true
+false
+"" ""
+PENS
+"totcont" 1.0 0 -16777216 true "" "plot total-contribution"
 
 @#$#@#$#@
 ## WHAT IS IT?
