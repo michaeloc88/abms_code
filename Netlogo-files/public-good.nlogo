@@ -26,32 +26,37 @@ globals [
 ; ************ (S E T U P) ************
 
 to setup
+
   clear-all
   set groups patches with [group?]
   setup-agents
   update-labels
   reset-ticks
+
 end
 
 to setup-agents
+
   create-turtles initial-agents [
     set my-group one-of groups
     move-to my-group
     hide-turtle
   ]
+
 end
 
 
 ; ************ (G O) ************
 
 to go
-  ;ask turtles [hide-turtle]
+
   contribute
   calc-fitness
   reproduce
   migrate
   update-labels
   tick
+
 end
 
 
@@ -103,43 +108,51 @@ to calc-fitness
 
   ;total fitness
   set total-fitness sum [agent-fitness] of turtles
+
 end
 
 
 ; ************ (R E P R O D U C E) ************
 
 to reproduce
+
   ask turtles[
     set prob-reproduce (agent-fitness / total-fitness) ;equation 4
 
     if (random-float 1.0 < prob-reproduce) [
-      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)] ;mutation to offspring
+      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)] ;mutation
     ]
   ]
+
 end
 
 
 ; ************ (M I G R A T I O N) ************
 
 to migrate
+
   ask turtles[
     if (random-float 1.0 < migration-rate)[
       set my-group one-of groups
       move-to my-group
       ]
   ]
+
 end
 
 
 ; ************ (U P D A T E) ************
 
 to update-labels
+
   ask groups [ set plabel count turtles-here]
+
 end
 
 
 ; ************ (M A K E - G R O U P S) ************
 
+;from Party model
 to-report group?  ;; patch procedure
   ;; if your pycor is 0 and your pxcor is where a group should be located,
   ;; then you're a group site.
