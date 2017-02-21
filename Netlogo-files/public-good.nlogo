@@ -3,43 +3,40 @@
 turtles-own [
    agent-fitness
    contribution
-   my-group
+   parentcontribution
    prob-reproduce
 ]
 
 patches-own [
   group-pop
-  group-fitness
   group-contribution
   avg-group-contribution
 ]
 
 globals [
-  groups
   total-pop
   total-contribution
   avg-contribution
   total-fitness
+  cumcontribution
 ]
 
 
 ;; ************ (S E T U P) ************
 
 to setup
-
   clear-all
-  set groups patches with [group?]
+  resize-world 0 (num-groups - 1) 0 0
   setup-agents
   update-labels
   reset-ticks
-
 end
 
 to setup-agents
 
-  create-turtles initial-agents [
-    set my-group one-of groups
-    move-to my-group
+  create-turtles num-agents [
+    move-to one-of patches
+    set contribution random-float 1
     hide-turtle
   ]
 
@@ -49,35 +46,34 @@ end
 ;; ************ (G O) ************
 
 to go
-
   contribute
   calc-fitness
+  if ticks >= 1000 [
+    set cumcontribution cumcontribution + 0.001 * mean [contribution] of turtles
+  ]
   reproduce
   migrate
   update-labels
   tick
-
 end
 
 
 ;; ************ (C O N T R I B U T E) ************
 
 to contribute
-
-  ask turtles[
-    set contribution random-float 1 ;; Individual contributions
-    ]
-
-  ask groups[
+;  ask turtles [
+;    if random-float 1 < mutation-rate [set contribution random-float 1]
+;  ]
+  ask patches [
     set group-pop count turtles-here
     set group-contribution sum [contribution] of turtles-here ;; Total group contributions
-     ifelse (group-pop > 0) [set avg-group-contribution group-contribution / group-pop][set avg-group-contribution 0]  ;; Average group contributions
-           set pcolor scale-color red avg-group-contribution 0 .8
+    if group-pop > 0 [
+    set avg-group-contribution group-contribution / group-pop]  ;; Average group contributions
+    set pcolor scale-color red avg-group-contribution 0 .8
     ]
 
-  set total-pop count turtles
   set total-contribution sum [contribution] of turtles ;; Total contributions
-  set avg-contribution (total-contribution / total-pop) ;; Average contributions
+  set avg-contribution (total-contribution / num-agents) ;; Average contributions
 
 end
 
@@ -87,24 +83,19 @@ end
 to calc-fitness
 
   ;; Individual fitness
-  ask turtles[
-    ifelse (group-pop > B)[
-      set agent-fitness (1 - contribution + (B / group-pop) * total-contribution) ;; Equation 3
+  ask patches [
+    ask turtles-here [
+      ifelse constrained [
+        ifelse (group-pop < B) [
+          set agent-fitness (1 - contribution) + group-contribution
+        ][
+          set agent-fitness (1 - contribution) + group-contribution * (B / group-pop)
+        ]
+      ][
+        set agent-fitness (1 - contribution) + (group-contribution * (B / group-pop))
+      ]
     ]
-    [
-       set agent-fitness (1 - contribution + total-contribution) ;; Equation 5
-
-    ;type "my group" print my-group
-    ;type "group pop " print group-pop
-    ;type "contribution " print contribution
-    ;type "agent fitness " print agent-fitness
-    ]
-  ]
-
-  ;; Group fitness
-  ask groups[
-    set group-fitness sum [agent-fitness] of turtles-here
-    ;type "group fitness " print group-fitness
+;    if group-pop > 0 [show mean [agent-fitness] of turtles-here]
   ]
 
   ;; Total fitness
@@ -118,11 +109,29 @@ end
 to reproduce
 
   ask turtles[
-    set prob-reproduce (agent-fitness / total-fitness) ;; Equation 4
+    set prob-reproduce (agent-fitness / total-fitness)
+    set parentcontribution contribution
+  ]
+  let maxprob max [prob-reproduce] of turtles
+  ask turtles [
+    set prob-reproduce prob-reproduce / maxprob
+  ]
 
-    if (random-float 1.0 < prob-reproduce) [
-      hatch 1 [set contribution (contribution + random-normal 0 mutation-rate)] ;; Mutation
+  let i 0
+  while [i < num-agents]
+  [
+    let draw one-of turtles
+    if random-float 1 < [prob-reproduce] of draw
+    [
+      ask turtle i [set contribution [parentcontribution] of draw move-to draw]
+      set i i + 1
     ]
+  ]
+
+  ask turtles [
+    set contribution contribution + random-normal 0 mutation-rate
+    if contribution < 0 [set contribution 0]
+    if contribution > 1 [set contribution 1]
   ]
 
 end
@@ -131,14 +140,11 @@ end
 ;; ************ (M I G R A T I O N) ************
 
 to migrate
-
   ask turtles[
     if (random-float 1.0 < migration-rate)[
-      set my-group one-of groups ;; Move to random group
-      move-to my-group
+      move-to one-of patches
       ]
   ]
-
 end
 
 
@@ -146,40 +152,17 @@ end
 
 to update-labels
 
-  ask groups [ set plabel count turtles-here]
+  ask patches [ set plabel count turtles-here]
 
-end
-
-
-;; ************ (M A K E - G R O U P S) ************
-
-;; From Party model:
-to-report group?  ;; patch procedure
-  ;; if your pycor is 0 and your pxcor is where a group should be located,
-  ;; then you're a group site.
-  ;; In this model (0,0) is near the right edge, so pxcor is usually
-  ;; negative.
-  ;; first figure out how many patches apart the groups will be
-  let group-interval floor (world-width / num-groups)
-  report
-    ;; all group sites are in the middle row
-    (pycor = 0) and
-    ;; leave a right margin of one patch, for legibility
-    (pxcor <= 0) and
-    ;; the distance between groups must divide evenly into
-    ;; our pxcor
-    (pxcor mod group-interval = 0) and
-    ;; finally, make sure we don't wind up with too many groups
-    (floor ((- pxcor) / group-interval) < num-groups)
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 69
 300
-787
-456
+494
+372
 -1
-1
+0
 41.7
 1
 15
@@ -187,13 +170,13 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
+0
 0
 1
--15
-1
--1
-1
+0
+9
+0
+0
 0
 0
 1
@@ -205,11 +188,11 @@ SLIDER
 55
 229
 88
-initial-agents
-initial-agents
+num-agents
+num-agents
 1
 1000
-11
+1000
 1
 1
 agents
@@ -256,7 +239,7 @@ B
 B
 0
 100
-10
+40
 1
 1
 NIL
@@ -270,7 +253,7 @@ SLIDER
 migration-rate
 migration-rate
 0
-1
+0.05
 0.006
 .001
 1
@@ -285,8 +268,8 @@ SLIDER
 mutation-rate
 mutation-rate
 0
-1
-0.01
+0.05
+0.006
 .001
 1
 NIL
@@ -327,31 +310,13 @@ NIL
 0
 
 PLOT
-291
+435
 10
-491
-160
-mean group fitness
+819
+294
+mean contribution
 time
 fitness
-0.0
-10.0
-0.0
-5.0
-true
-false
-"" ""
-PENS
-"totcont" 1.0 0 -16777216 true "" "plot mean [group-fitness] of groups"
-
-PLOT
-497
-10
-697
-160
-mean group contributions
-time
-contributions
 0.0
 10.0
 0.0
@@ -360,25 +325,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot mean [avg-group-contribution] of groups"
-
-PLOT
-703
-10
-903
-160
-mean group pop
-time
-agents
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot  mean [group-pop] of groups"
+"totcont" 1.0 0 -16777216 true "" "plot mean [contribution] of turtles"
 
 TEXTBOX
 157
@@ -409,6 +356,54 @@ Light red - Lowest average contributions
 12
 18.0
 1
+
+SWITCH
+222
+198
+342
+231
+constrained
+constrained
+1
+1
+-1000
+
+PLOT
+827
+10
+1201
+294
+histogram
+NIL
+NIL
+0.0
+1.0
+0.0
+10.0
+true
+false
+"set-histogram-num-bars 100" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [contribution] of turtles"
+
+PLOT
+745
+311
+1186
+652
+patch 0 0
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"contribution" 1.0 0 -16777216 true "" "ask patch 0 0 [ifelse count turtles-here > 0 [plot mean [contribution] of turtles-here][plot 0]]"
+"size" 1.0 0 -2674135 true "" "ask patch 0 0 [plot (count turtles-here / num-agents)]"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -757,6 +752,32 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2000"/>
+    <metric>cumcontribution</metric>
+    <enumeratedValueSet variable="mutation-rate">
+      <value value="0"/>
+      <value value="0.006"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="B">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="num-agents">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="constrained">
+      <value value="false"/>
+      <value value="true"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="migration-rate" first="0" step="0.006" last="0.045"/>
+    <enumeratedValueSet variable="num-groups">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
